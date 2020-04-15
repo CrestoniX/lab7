@@ -1,4 +1,4 @@
-"Copyright 2020 by CrestoniX"
+Copyright 2020 by CrestoniX
 #ifndef __cplusplus
 # error "A C compiler has been selected for C++."
 #endif
@@ -281,7 +281,8 @@
 #  define COMPILER_VERSION_PATCH DEC((__VER__) % 1000)
 #  define COMPILER_VERSION_INTERNAL DEC(__IAR_SYSTEMS_ICC__)
 # elif defined(__VER__) && (defined(__ICCAVR__) || defined(__ICCRX__)
-|| defined(__ICCRH850__) || defined(__ICCRL78__) || defined(__ICC430__) ||
+|| defined(__ICCRH850__) || defined(__ICCRL78__)
+|| defined(__ICC430__) ||
 defined(__ICCRISCV__))
 #  define COMPILER_VERSION_MAJOR DEC((__VER__) / 100)
 #  define COMPILER_VERSION_MINOR DEC((__VER__) - (((__VER__) / 100)*100))
@@ -347,7 +348,6 @@ char const *info_cray = "INFO" ":" "compiler_wrapper[CrayPrgEnv]";
 
 #elif defined(__sun) || defined(sun)
 # define PLATFORM_ID "SunOS"
-
 #elif defined(_AIX) || defined(__AIX) || defined(__AIX__)
 || defined(__aix) || defined(__aix__)
 # define PLATFORM_ID "AIX"
@@ -584,7 +584,7 @@ char const info_simulate_version[] = {
 #  ifdef SIMULATE_VERSION_PATCH
    '.', SIMULATE_VERSION_PATCH,
 #   ifdef SIMULATE_VERSION_TWEAK
-    '.', SIMULATE_VERSION_TWEAK,
+    '.', SIMULATE_VERSION_TWEAK, 
 #   endif
 #  endif
 # endif
