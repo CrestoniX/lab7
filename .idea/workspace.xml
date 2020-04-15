@@ -40,7 +40,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cf.advertisement.text.has.clang-format" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../lab-08-asio-client" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="CPPToolchains" />
@@ -63,7 +63,7 @@
       <workItem from="1584284008447" duration="2441000" />
       <workItem from="1584286937315" duration="125000" />
       <workItem from="1584287484562" duration="1333000" />
-      <workItem from="1586954294335" duration="5030000" />
+      <workItem from="1586954294335" duration="6376000" />
     </task>
     <servers />
   </component>
@@ -88,6 +88,10 @@
       <screen x="0" y="0" width="1440" height="860" />
     </state>
     <state x="345" y="24" key="CommitChangelistDialog2/0.0.1440.860@0.0.1440.860" timestamp="1586954497338" />
+    <state x="498" y="243" key="FileChooserDialogImpl" timestamp="1586960766703">
+      <screen x="0" y="0" width="1440" height="860" />
+    </state>
+    <state x="498" y="243" key="FileChooserDialogImpl/0.0.1440.860@0.0.1440.860" timestamp="1586960766703" />
     <state x="253" y="75" key="SettingsEditor" timestamp="1586957487870">
       <screen x="0" y="0" width="1440" height="860" />
     </state>
