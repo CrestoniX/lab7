@@ -1,6 +1,4 @@
-/* This source file must have a .cpp extension so that all C++ compilers
-   recognize the extension without flags.  Borland does not know .cxx for
-   example.  */
+// Copyright 2020 by CrestoniX
 #ifndef __cplusplus
 # error "A C compiler has been selected for C++."
 #endif
@@ -265,7 +263,8 @@
 #  define COMPILER_VERSION_TWEAK DEC(_MSC_BUILD)
 # endif
 
-#elif defined(__VISUALDSPVERSION__) || defined(__ADSPBLACKFIN__) || defined(__ADSPTS__) || defined(__ADSP21000__)
+#elif defined(__VISUALDSPVERSION__) || defined(__ADSPBLACKFIN__)
+|| defined(__ADSPTS__) || defined(__ADSP21000__)
 # define COMPILER_ID "ADSP"
 #if defined(__VISUALDSPVERSION__)
   /* __VISUALDSPVERSION__ = 0xVVRRPP00 */
@@ -281,7 +280,9 @@
 #  define COMPILER_VERSION_MINOR DEC(((__VER__) / 1000) % 1000)
 #  define COMPILER_VERSION_PATCH DEC((__VER__) % 1000)
 #  define COMPILER_VERSION_INTERNAL DEC(__IAR_SYSTEMS_ICC__)
-# elif defined(__VER__) && (defined(__ICCAVR__) || defined(__ICCRX__) || defined(__ICCRH850__) || defined(__ICCRL78__) || defined(__ICC430__) || defined(__ICCRISCV__))
+# elif defined(__VER__) && (defined(__ICCAVR__) || defined(__ICCRX__)
+|| defined(__ICCRH850__) || defined(__ICCRL78__) || defined(__ICC430__) ||
+defined(__ICCRISCV__))
 #  define COMPILER_VERSION_MAJOR DEC((__VER__) / 100)
 #  define COMPILER_VERSION_MINOR DEC((__VER__) - (((__VER__) / 100)*100))
 #  define COMPILER_VERSION_PATCH DEC(__SUBVERSION__)
@@ -347,7 +348,8 @@ char const *info_cray = "INFO" ":" "compiler_wrapper[CrayPrgEnv]";
 #elif defined(__sun) || defined(sun)
 # define PLATFORM_ID "SunOS"
 
-#elif defined(_AIX) || defined(__AIX) || defined(__AIX__) || defined(__aix) || defined(__aix__)
+#elif defined(_AIX) || defined(__AIX) || defined(__AIX__)
+|| defined(__aix) || defined(__aix__)
 # define PLATFORM_ID "AIX"
 
 #elif defined(__hpux) || defined(__hpux__)
