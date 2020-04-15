@@ -19,8 +19,8 @@ struct Client {
         lastLogin = std::chrono::system_clock::now();
     }
 };
-/*using std::chrono_literals::operator""ms;
-using std::chrono_literals::operator""s;*/
+using std::chrono_literals::operator""ms;
+using std::chrono_literals::operator""s;
 int main(){
     std::recursive_mutex mutex;
     logging::add_file_log
