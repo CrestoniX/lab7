@@ -584,7 +584,7 @@ char const info_simulate_version[] = {
 #  ifdef SIMULATE_VERSION_PATCH
    '.', SIMULATE_VERSION_PATCH,
 #   ifdef SIMULATE_VERSION_TWEAK
-    '.', SIMULATE_VERSION_TWEAK, 
+    '.',SIMULATE_VERSION_TWEAK,
 #   endif
 #  endif
 # endif
