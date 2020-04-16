@@ -9,9 +9,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4f3b81e2-751e-487c-b1a4-e1e28f243272" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.15.3/CompilerIdCXX/CMakeCXXCompilerId.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.15.3/CompilerIdCXX/CMakeCXXCompilerId.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="4f3b81e2-751e-487c-b1a4-e1e28f243272" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -63,7 +61,7 @@
       <workItem from="1584284008447" duration="2441000" />
       <workItem from="1584286937315" duration="125000" />
       <workItem from="1584287484562" duration="1333000" />
-      <workItem from="1586954294335" duration="17570000" />
+      <workItem from="1586954294335" duration="18189000" />
     </task>
     <servers />
   </component>
