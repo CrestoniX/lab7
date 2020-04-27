@@ -17,5 +17,7 @@ namespace logging = boost::log;
 namespace src = boost::log::sources;
 namespace sinks = boost::log::sinks;
 namespace keywords = boost::log::keywords;
-using boost::asio::ip::tcp;
 using boost::system::error_code;
+using namespace std::chrono_literals;
+using namespace boost::asio;
+using namespace boost::posix_time;

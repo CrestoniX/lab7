@@ -1,28 +1,160 @@
 // Copyright 2020 by CrestoniX
 #include <header.hpp>
 #include <deque>
+#include <boost/shared_ptr.hpp>
+boost::asio::io_context IoContext;
+boost::system::error_code error;
+boost::recursive_mutex cs;
 
-constexpr static int PORT = 60013;
-struct Client {
-    tcp::socket socket;
-    std::string login;
-    std::chrono::system_clock::time_point lastLogin;
-    boost::asio::streambuf buffer;
-    std::string clientList;
-    explicit Client(boost::asio::io_context& ioContext):socket(ioContext),
-    login(),
-    lastLogin(std::chrono::system_clock::now()),
-    buffer(),
-    clientList(){
+class talk_to_client
+{
+ public:
+  talk_to_client(const std::string& username)
+      : sock_(IoContext), started_(true), username_(username) {}
+  using client_ptr = boost::shared_ptr<talk_to_client>;
+  typedef std::vector<client_ptr> array;
+  static array clients;
+
+  std::string username() const { return username_; }
+
+  void process_request()
+  {
+    bool found_enter = std::find(buff_, buff_ + already_read_, '\n') < buff_ + already_read_;
+    if (!found_enter)
+      return; // message is not full
+    // process the msg
+    last_ping = microsec_clock::local_time();
+    size_t pos = std::find(buff_, buff_ + already_read_, '\n') - buff_;
+    std::string msg(buff_, pos);
+    std::copy(buff_ + already_read_, buff_ + max_msg, buff_);
+    already_read_ -= pos + 1;
+    if ( msg.find("login ") == 0) on_login(msg);
+    else if ( msg.find("ping") == 0) on_ping();
+    else if ( msg.find("ask_clients") == 0) on_clients();
+    else std::cerr << "invalid msg " << msg << std::endl;
+  }
+
+  void on_login(const std::string & msg)
+  {
+    std::istringstream in(msg);
+    in >> username_ >> username_;
+    write("login ok\n");
+    set_clients_changed();
+  }
+  void write(const std::string& msg)
+  {
+    sock_.write_some(buffer(msg));
+  }
+  void set_clients_changed() {
+    clients_changed_ = true;
+  }
+
+  void on_ping()
+  {
+    write(clients_changed_ ? "ping client_list_changed\n" : "ping ok\n");
+    clients_changed_ = false;
+  }
+
+  void on_clients()
+  {
+    std::string msg;
+    {
+      boost::recursive_mutex::scoped_lock lk(cs);
+      for( array::const_iterator b = clients.begin(), e = clients.end() ;b != e; ++b)
+        msg += (*b)->username() + " ";
     }
-    void updateTime(){
-        lastLogin = std::chrono::system_clock::now();
+    write("clients " + msg + "\n");
+  }
+
+  void answer_to_client() {
+      try {
+        read_request();
+        process_request();
+      } catch (boost::system::system_error&) {
+        stop();
+      }
+      if (timed_out()) stop();
     }
-};
-using std::chrono_literals::operator""ms;
-using std::chrono_literals::operator""s;
-int main(){
-    std::recursive_mutex mutex;
+    ip::tcp::socket& sock() { return sock_; }
+
+    bool timed_out() const
+    {
+      ptime now = microsec_clock::local_time();
+      long long ms = (now - last_ping).total_milliseconds();
+      return ms > 10000;
+    }
+
+    void stop()
+    {
+      boost::system::error_code err;
+      sock_.close(err);
+    }
+
+    void read_request()
+    {
+      if (sock_.available())
+        already_read_ += sock_.read_some(
+            buffer(buff_ + already_read_, max_msg - already_read_));
+    }
+
+
+   private:
+    ip::tcp::socket sock_;
+    enum { max_msg = 1024 };
+    int already_read_;
+    char buff_[max_msg];
+    bool started_;
+    std::string username_;
+    bool clients_changed_;
+    ptime last_ping;
+  };
+std::vector<boost::shared_ptr<talk_to_client>> talk_to_client::clients;
+
+
+void accept_thread() {
+  ip::tcp::acceptor acceptor(IoContext, ip::tcp::endpoint(ip::tcp::v4(), 60013));
+  while (true) {
+    talk_to_client::client_ptr new_(new talk_to_client(""));
+    acceptor.accept(new_->sock());
+    boost::recursive_mutex::scoped_lock lk(cs);
+    talk_to_client::clients.push_back(new_);
+  }
+}
+  void handle_clients_thread() {
+    while (true) {
+      sleep(1);
+      boost::recursive_mutex::scoped_lock lk(cs);
+      std::vector<talk_to_client::client_ptr>::iterator e =
+          talk_to_client::clients.end();
+      for (std::vector<talk_to_client::client_ptr>::iterator b =
+               talk_to_client::clients.begin();
+           b != e; ++b)
+        (*b)->answer_to_client();
+      talk_to_client::clients.erase(
+          std::remove_if(
+              talk_to_client::clients.begin(), e,
+              std::bind(&talk_to_client::timed_out, std::placeholders::_1)),
+          e);
+    }
+  }
+int main()
+{
+  boost::asio::detail::thread_group threads;
+  threads.create_thread(accept_thread);
+  threads.create_thread(handle_clients_thread);
+  threads.join();
+}
+
+
+
+
+
+
+
+
+
+    // логгирование - начало
+    /*std::recursive_mutex mutex;
     logging::add_file_log
     (
             keywords::file_name = "sample_%N.log",
@@ -32,85 +164,7 @@ int main(){
             keywords::format = "[%TimeStamp%]: %Message%");
     using logging::trivial::severity_level;
     using logging::trivial::severity_level::info;
-    src::severity_logger<severity_level> lg;
-    boost::asio::io_context ioContext;
-    tcp::acceptor acceptor(ioContext, tcp::endpoint(tcp::v4(), PORT));
-    std::deque<std::shared_ptr<Client>> clients;
-    std::thread connectionHandler([&acceptor, &ioContext, &mutex, &clients](){
-        while (true) {
-            auto client = std::make_shared<Client>(ioContext);
-            acceptor.accept(client -> socket);
-            std::scoped_lock lock(mutex);
-            clients.push_back(client);
-            std::this_thread::sleep_for(1ms);
-        }
-    });
-    std::thread clientHandler([&mutex, &clients, &lg](){
-        while (true) {
-            std::this_thread::sleep_for(1ms);
-            std::scoped_lock lock(mutex);
-            for (const auto &client : clients) {
-                error_code error;
-                if (client->socket.available(error)) {
-                    boost::asio::read_until(
-                            client->socket,
-                            client->buffer,
-                            "\n",
-                            error);
-                    if (!error) {
-                        client->updateTime();
-                        std::istream is(&(client->buffer));
-                        std::string message;
-                        is >> message;
-                        std::cout << message << "\n";
-                        if (message == "ping") {
-                            std::string a;
-                            client->clientList = "";
-                            for (const auto &clientInner : clients) {
-                                a += clientInner->login + ", ";
-                            }
-                            if (a != client->clientList) {
-                                client->clientList = a;
-                                boost::asio::streambuf output;
-                                std::ostream os(&output);
-                                os << "client_list_changed\n";
-                                boost::asio::write(
-                                        client->socket,
-                                        output,
-                                        error);
-                            }
-                        } else if (message == "clients") {
-                            boost::asio::streambuf output;
-                            std::ostream os(&output);
-                            client->clientList = "";
-                            for (const auto &clientInner : clients) {
-                                client->clientList += clientInner->login + ", ";
-                            }
-                            os << client->clientList << "\n";
-                            boost::asio::write(client->socket, output, error);
-                        } else if (message.substr(0, 5) == "login") {
-                            client->login = message.substr(6);
-                            BOOST_LOG_SEV(lg, info) << "New client: "
-                             << message.substr(6);
-                            for (const auto &clientInner : clients) {
-                                client->clientList += clientInner->login + ", ";
-                                boost::asio::streambuf output;
-                                std::ostream os(&output);
-                                os << "login ok\n";
-                                boost::asio::write(
-                                        client->socket,
-                                        output,
-                                        error);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    });
-    connectionHandler.detach();
-    clientHandler.detach();
-    while (true) {
-        std::this_thread::sleep_for(1ms);
-    }
-}
+    src::severity_logger<severity_level> lg;*/
+    // логгирование - конец
+
+
