@@ -32,9 +32,10 @@ class talk_to_client
     already_read_ -= pos + 1;
     if ( msg.find("login ") == 0) on_login(msg);
     else
-        if ( msg.find("ping") == 0) on_ping();
-    else
-        if ( msg.find("ask_clients") == 0) on_clients();
+    {
+      if ( msg.find("ping") == 0) on_ping();
+    }
+      if ( msg.find("ask_clients") == 0) on_clients();
     else std::cerr << "invalid msg " << msg << std::endl;
   }
 
