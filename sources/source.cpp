@@ -2,6 +2,7 @@
 #include <header.hpp>
 #include <deque>
 #include <boost/shared_ptr.hpp>
+#include <stdint-intn.h>
 boost::asio::io_context IoContext;
 boost::system::error_code error;
 boost::recursive_mutex cs;
@@ -9,7 +10,7 @@ boost::recursive_mutex cs;
 class talk_to_client
 {
  public:
-  talk_to_client(const std::string& username)
+  explicit talk_to_client(const std::string& username)
       : sock_(IoContext), started_(true), username_(username) {}
   using client_ptr = boost::shared_ptr<talk_to_client>;
   typedef std::vector<client_ptr> array;
@@ -19,7 +20,8 @@ class talk_to_client
 
   void process_request()
   {
-    bool found_enter = std::find(buff_, buff_ + already_read_, '\n') < buff_ + already_read_;
+    bool found_enter = std::find(buff_, buff_ + already_read_,
+                                 '\n') < buff_ + already_read_;
     if (!found_enter)
       return; // message is not full
     // process the msg
@@ -29,8 +31,10 @@ class talk_to_client
     std::copy(buff_ + already_read_, buff_ + max_msg, buff_);
     already_read_ -= pos + 1;
     if ( msg.find("login ") == 0) on_login(msg);
-    else if ( msg.find("ping") == 0) on_ping();
-    else if ( msg.find("ask_clients") == 0) on_clients();
+    else
+        if ( msg.find("ping") == 0) on_ping();
+    else
+        if ( msg.find("ask_clients") == 0) on_clients();
     else std::cerr << "invalid msg " << msg << std::endl;
   }
 
@@ -60,7 +64,8 @@ class talk_to_client
     std::string msg;
     {
       boost::recursive_mutex::scoped_lock lk(cs);
-      for( array::const_iterator b = clients.begin(), e = clients.end() ;b != e; ++b)
+      for (array::const_iterator b = clients.begin(),
+                                 e = clients.end() ; b != e; ++b)
         msg += (*b)->username() + " ";
     }
     write("clients " + msg + "\n");
@@ -80,8 +85,8 @@ class talk_to_client
     bool timed_out() const
     {
       ptime now = microsec_clock::local_time();
-      long long ms = (now - last_ping).total_milliseconds();
-      return ms > 10000;
+      int64_t ms = (now - last_ping).total_milliseconds();
+      return ms > 5000;
     }
 
     void stop()
