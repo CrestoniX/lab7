@@ -104,7 +104,7 @@ class talk_to_client
       if (sock_.available())
         already_read_ += sock_.read_some(
             boost::asio::buffer(buff_ + already_read_,
-                                max_msg - already_read_));
+                                max_msg - already_read_)); 
     }
 
 
@@ -112,7 +112,7 @@ class talk_to_client
     boost::asio::ip::tcp::socket sock_;
     static const int max_msg = 1024;
     int already_read_;
-    char buff_[max_msg];
+    char buff_[1024];
     bool started_;
     std::string username_;
     bool clients_changed_;
