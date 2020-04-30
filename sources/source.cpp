@@ -2,7 +2,6 @@
 #include <header.hpp>
 #include <deque>
 #include <boost/shared_ptr.hpp>
-#include <stdint-intn.h>
 boost::asio::io_context IoContext;
 boost::system::error_code error;
 boost::recursive_mutex cs;
@@ -25,7 +24,7 @@ class talk_to_client
     if (!found_enter)
       return; // message is not full
     // process the msg
-    last_ping = microsec_clock::local_time();
+    last_ping = boost::posix_time::microsec_clock::local_time();
     size_t pos = std::find(buff_, buff_ + already_read_, '\n') - buff_;
     std::string msg(buff_, pos);
     std::copy(buff_ + already_read_, buff_ + max_msg, buff_);
@@ -35,7 +34,7 @@ class talk_to_client
     {
       if ( msg.find("ping") == 0) on_ping();
     }
-      if ( msg.find("ask_clients") == 0) on_clients();
+    if ( msg.find("ask_clients") == 0) on_clients();
     else
       {
       std::cerr << "invalid msg " << msg << std::endl;
@@ -51,7 +50,7 @@ class talk_to_client
   }
   void write(const std::string& msg)
   {
-    sock_.write_some(buffer(msg));
+    sock_.write_some(boost::asio::buffer(msg));
   }
   void set_clients_changed() {
     clients_changed_ = true;
@@ -84,11 +83,12 @@ class talk_to_client
       }
       if (timed_out()) stop();
     }
-    ip::tcp::socket& sock() { return sock_; }
+    boost::asio::ip::tcp::socket& sock() { return sock_; }
 
     bool timed_out() const
     {
-      ptime now = microsec_clock::local_time();
+      boost::posix_time::ptime now =
+          boost::posix_time::microsec_clock::local_time();
       int64_t ms = (now - last_ping).total_milliseconds();
       return ms > 5000;
     }
@@ -103,25 +103,29 @@ class talk_to_client
     {
       if (sock_.available())
         already_read_ += sock_.read_some(
-            buffer(buff_ + already_read_, max_msg - already_read_));
+            boost::asio::buffer(buff_ + already_read_,
+                                max_msg - already_read_));
     }
 
 
    private:
-    ip::tcp::socket sock_;
-    enum { max_msg = 1024 };
+    boost::asio::ip::tcp::socket sock_;
+    static const int max_msg = 1024;
     int already_read_;
     char buff_[max_msg];
     bool started_;
     std::string username_;
     bool clients_changed_;
-    ptime last_ping;
+    boost::posix_time::ptime last_ping;
   };
 std::vector<boost::shared_ptr<talk_to_client>> talk_to_client::clients;
 
 
 void accept_thread() {
-  ip::tcp::acceptor acceptor(IoContext, ip::tcp::endpoint(ip::tcp::v4(), 60013));
+  boost::asio::ip::tcp::acceptor acceptor(IoContext,
+                             boost::asio::ip::tcp::endpoint(
+                                              boost::asio::ip::tcp::v4(),
+                                              60013));
   while (true) {
     talk_to_client::client_ptr new_(new talk_to_client(""));
     acceptor.accept(new_->sock());
