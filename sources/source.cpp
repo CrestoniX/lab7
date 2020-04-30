@@ -36,7 +36,10 @@ class talk_to_client
       if ( msg.find("ping") == 0) on_ping();
     }
       if ( msg.find("ask_clients") == 0) on_clients();
-    else std::cerr << "invalid msg " << msg << std::endl;
+    else
+      {
+      std::cerr << "invalid msg " << msg << std::endl;
+    }
   }
 
   void on_login(const std::string & msg)
