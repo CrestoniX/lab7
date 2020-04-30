@@ -104,7 +104,7 @@ class talk_to_client
       if (sock_.available())
         already_read_ += sock_.read_some(
             boost::asio::buffer(buff_ + already_read_,
-                                max_msg - already_read_)); 
+                                max_msg - already_read_));
     }
 
 
