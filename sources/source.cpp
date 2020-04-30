@@ -113,7 +113,6 @@ class talk_to_client
     static const int max_msg = 1024;
     int already_read_;
     char buff_[1024];
-    bool started_;
     std::string username_;
     bool clients_changed_;
     boost::posix_time::ptime last_ping;
