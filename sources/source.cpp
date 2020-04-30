@@ -10,7 +10,7 @@ class talk_to_client
 {
  public:
   explicit talk_to_client(const std::string& username)
-      : sock_(IoContext), started_(true), username_(username) {}
+      : sock_(IoContext), username_(username) {}
   using client_ptr = boost::shared_ptr<talk_to_client>;
   typedef std::vector<client_ptr> array;
   static array clients;
